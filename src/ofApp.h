@@ -1,6 +1,10 @@
 #pragma once
 
 #include "ofMain.h"
+#include "ofxGui.h"
+#include  "ofxAssimpModelLoader.h"
+#include <glm/gtx/intersect.hpp>
+#include <glm/gtx/closest_point.hpp>
 
 class ofApp : public ofBaseApp{
 
@@ -20,5 +24,9 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
-		
+
+		ofxAssimpModelLoader map, lander;
+		ofEasyCam cam;
+
+		void initLightingAndMaterials();
 };

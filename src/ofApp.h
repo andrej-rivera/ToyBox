@@ -2,6 +2,8 @@
 
 #include "ofMain.h"
 #include "ofxGui.h"
+#include "Octree.h"
+#include "Lander.h"
 #include  "ofxAssimpModelLoader.h"
 #include <glm/gtx/intersect.hpp>
 #include <glm/gtx/closest_point.hpp>
@@ -25,8 +27,19 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 
-		ofxAssimpModelLoader map, lander;
+		ofxAssimpModelLoader map;
+		Lander lander;
 		ofEasyCam cam;
+
+		// collision objects
+		Octree octree;
+		Box boundingBox, landerBounds;
+		vector<Box> colBoxList;
+		vector<Box> bboxList;
+
+		// temp gui objects
+		ofxIntSlider numLevels;
+		ofxPanel gui;
 
 		void initLightingAndMaterials();
 };

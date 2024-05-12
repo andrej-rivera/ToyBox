@@ -15,26 +15,59 @@ void ofApp::setup(){
 	initLightingAndMaterials();
 
 
-	//setup meshes
+	//setup map
 	map.loadModel("geo/moon-houdini.obj");
 	map.setScaleNormalization(false);
+
+	//setup lander
+	lander.model.loadModel("geo/lander.obj");
+	lander.model.setScaleNormalization(false);
+	lander.model.setScale(.5, .5, .5);
+	lander.model.setPosition(0, 100, 0);
+
+	lander.landerAngle = lander.model.getRotationAngle(0);
+
+	//setup octree
+	octree.create(map.getMesh(0), 10);
+
+
+	//temp gui stuff
+	gui.setup();
+	gui.add(numLevels.setup("Number of Octree Levels", 1, 1, 10));
+
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-
+	lander.integrate();
+	lander.angularIntegrate();
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
 	ofBackground(ofColor::black);
 
+	ofFill();
+	ofSetColor(ofColor::blue);
+	gui.draw();
+
+
 	cam.begin();
 	ofPushMatrix();
 	ofEnableLighting();              // shaded mode
 	map.drawFaces();
 
+	lander.model.drawFaces();
+	lander.drawDebugArrow(); // draws heading vector & side vector arrows
+
+	// draw octree
+	ofNoFill();
+	ofSetColor(ofColor::white);
+	octree.draw(numLevels, 0);
+
 	ofPopMatrix();
+
+
 	cam.end();
 }
 
@@ -44,6 +77,39 @@ void ofApp::keyPressed(int key){
 	case OF_KEY_ALT:
 		cam.enableMouseInput();
 		break;
+	
+	// ================== lander rotation ================== \\
+	
+	case 'd':     // rotate spacecraft clockwise (about Y (UP) axis)
+		lander.angularAcceleration -= lander.landerThrust * 20;
+		break;
+	case 'a':     // rotate spacecraft counter-clockwise (about Y (UP) axis)
+		lander.angularAcceleration += lander.landerThrust * 20;
+		break;
+	case 'w':     // spacecraft thrust UP
+		lander.landerAcceleration.y += lander.landerThrust;
+		break;
+	case 's':     // spacefraft thrust DOWN
+		lander.landerAcceleration.y -= lander.landerThrust;
+		break;
+
+	// ================== lander movement ================== \\
+	
+	case OF_KEY_UP:    // move forward
+		lander.landerAcceleration += lander.headingVector * lander.landerThrust;
+		//landerAcceleration += headingVector * landerThrust;
+		break;
+	case OF_KEY_DOWN:   // move backward
+		//landerAcceleration += ofVec3f(0, 0, landerThrust);
+		lander.landerAcceleration -= lander.headingVector * lander.landerThrust;
+		break;
+	case OF_KEY_LEFT:   // move left
+		lander.landerAcceleration -= lander.sideVector * lander.landerThrust;
+		break;
+	case OF_KEY_RIGHT:   // move right
+		lander.landerAcceleration += lander.sideVector * lander.landerThrust;
+		break;
+
 	default:
 		break;
 	}

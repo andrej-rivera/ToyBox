@@ -1,2 +1,4 @@
 .vs
 bin/toybox_debug.pdb
+bin/toybox_debug.exe
+/obj

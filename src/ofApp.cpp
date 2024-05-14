@@ -19,13 +19,6 @@ void ofApp::setup(){
 	map.loadModel("geo/moon-houdini.obj");
 	map.setScaleNormalization(false);
 
-	//setup lander
-	lander.model.loadModel("geo/lander.obj");
-	lander.model.setScaleNormalization(false);
-	lander.model.setScale(.5, .5, .5);
-	lander.model.setPosition(0, 100, 0);
-
-	lander.landerAngle = lander.model.getRotationAngle(0);
 
 	//setup octree
 	octree.create(map.getMesh(0), 10);
@@ -35,12 +28,36 @@ void ofApp::setup(){
 	gui.setup();
 	gui.add(numLevels.setup("Number of Octree Levels", 1, 1, 10));
 
+
+	//setup lander
+	lander.setup();
+	lander.forces.push_back(&gravityForce);
+	lander.forces.push_back(&groundForce);
+	lander.forces.push_back(&forwardForce);
+	lander.forces.push_back(&sideForce);
+
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
+	playerMove();
+
+	//integrate lander
 	lander.integrate();
 	lander.angularIntegrate();
+
+	//handle collisions between lander & map
+	octree.intersect(lander.landerBounds, octree.root, lander.collisions);
+	if (lander.collisions.size() > 0)
+	{
+		lander.collisions.clear();
+		lander.landerVelocity = -lander.landerVelocity; 
+		groundForce = -lander.landerAcceleration + -gravityForce;
+	}
+	else {
+		groundForce = ofVec3f(0, 0, 0);
+	}
+
 }
 
 //--------------------------------------------------------------
@@ -64,12 +81,77 @@ void ofApp::draw(){
 	ofNoFill();
 	ofSetColor(ofColor::white);
 	octree.draw(numLevels, 0);
+	Octree::drawBox(lander.landerBounds);
+
+	ofSetColor(ofColor::red);
+	for (Box& collision : lander.collisions)
+	{
+		Octree::drawBox(collision);
+	}
+
 
 	ofPopMatrix();
 
 
 	cam.end();
 }
+
+void ofApp::playerMove() {
+
+	// rotation
+	if (keymap[0] == true) { // rotate spacecraft clockwise (about Y (UP) axis)
+		lander.angularAcceleration = -lander.landerThrust * 10;
+	}
+	if (keymap[1] == true) { // rotate spacecraft counter-clockwise (about Y (UP) axis)
+		lander.angularAcceleration = lander.landerThrust * 10;
+	}
+
+	// Y thrust
+
+	if (keymap[2] == true) { // up movement
+		lander.landerAcceleration.y = lander.landerThrust;
+	}
+	if (keymap[3] == true) { // down movement
+		lander.landerAcceleration.y = -lander.landerThrust;
+	}
+
+	// XZ thrust
+	if (keymap[4] == true) { // forward movement
+		forwardForce = lander.headingVector * lander.landerThrust;
+
+	}
+	if (keymap[5] == true) { // backward movement
+		forwardForce = lander.headingVector * -lander.landerThrust;
+	}
+	if (keymap[6] == true) { // left movement
+		sideForce = -lander.sideVector * lander.landerThrust;
+	}
+	if (keymap[7] == true) { // right movement
+		sideForce = lander.sideVector * lander.landerThrust;
+	}
+
+
+
+	// stops player movement 
+	if (keymap[0] == keymap[1])
+	{
+		lander.angularAcceleration = 0;
+	}
+	if (keymap[2] == keymap[3])
+	{
+		lander.landerAcceleration.y = 0;
+	}
+	if (keymap[4] == keymap[5])
+	{
+		forwardForce = ofVec3f(0, 0, 0);
+	}
+	if (keymap[6] == keymap[7])
+	{
+		sideForce = ofVec3f(0, 0, 0);
+	}
+
+}
+
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
@@ -78,36 +160,34 @@ void ofApp::keyPressed(int key){
 		cam.enableMouseInput();
 		break;
 	
-	// ================== lander rotation ================== \\
+	// ================== lander rotation & Y thrust ================== \\
 	
-	case 'd':     // rotate spacecraft clockwise (about Y (UP) axis)
-		lander.angularAcceleration -= lander.landerThrust * 20;
+	case 'd': // rotate clockwise
+		keymap[0] = true;
 		break;
-	case 'a':     // rotate spacecraft counter-clockwise (about Y (UP) axis)
-		lander.angularAcceleration += lander.landerThrust * 20;
+	case 'a': // rotate counterclockwise
+		keymap[1] = true;
 		break;
 	case 'w':     // spacecraft thrust UP
-		lander.landerAcceleration.y += lander.landerThrust;
+		keymap[2] = true;
 		break;
 	case 's':     // spacefraft thrust DOWN
-		lander.landerAcceleration.y -= lander.landerThrust;
+		keymap[3] = true;
 		break;
 
-	// ================== lander movement ================== \\
+	// ================== lander XZ thrust ================== \\
 	
 	case OF_KEY_UP:    // move forward
-		lander.landerAcceleration += lander.headingVector * lander.landerThrust;
-		//landerAcceleration += headingVector * landerThrust;
+		keymap[4] = true;
 		break;
-	case OF_KEY_DOWN:   // move backward
-		//landerAcceleration += ofVec3f(0, 0, landerThrust);
-		lander.landerAcceleration -= lander.headingVector * lander.landerThrust;
+	case OF_KEY_DOWN:   // move  backwards
+		keymap[5] = true;
 		break;
 	case OF_KEY_LEFT:   // move left
-		lander.landerAcceleration -= lander.sideVector * lander.landerThrust;
+		keymap[7] = true;
 		break;
 	case OF_KEY_RIGHT:   // move right
-		lander.landerAcceleration += lander.sideVector * lander.landerThrust;
+		keymap[6] = true;
 		break;
 
 	default:
@@ -117,10 +197,43 @@ void ofApp::keyPressed(int key){
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
+	//lander.landerAcceleration = ofVec3f(0, 0, 0);
+	//lander.angularAcceleration = 0;
 	switch (key) {
 	case OF_KEY_ALT:
 		cam.disableMouseInput();
 		break;
+
+		// ================== lander rotation & Y thrust ================== \\
+		
+	case 'd': // rotate clockwise
+		keymap[0] = false;
+		break;
+	case 'a': // rotate counterclockwise
+		keymap[1] = false;
+		break;
+	case 'w':     // spacecraft thrust UP
+		keymap[2] = false;
+		break;
+	case 's':     // spacefraft thrust DOWN
+		keymap[3] = false;
+		break;
+
+		// ================== lander XZ thrust ================== \\
+		
+	case OF_KEY_UP:    // move forward
+		keymap[4] = false;
+		break;
+	case OF_KEY_DOWN:   // move  backwards
+		keymap[5] = false;
+		break;
+	case OF_KEY_LEFT:   // move left
+		keymap[7] = false;
+		break;
+	case OF_KEY_RIGHT:   // move right
+		keymap[6] = false;
+		break;
+
 	default:
 		break;
 	}

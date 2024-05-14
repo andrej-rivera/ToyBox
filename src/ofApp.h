@@ -14,7 +14,7 @@ class ofApp : public ofBaseApp{
 		void setup();
 		void update();
 		void draw();
-
+		void playerMove();
 		void keyPressed(int key);
 		void keyReleased(int key);
 		void mouseMoved(int x, int y );
@@ -33,13 +33,20 @@ class ofApp : public ofBaseApp{
 
 		// collision objects
 		Octree octree;
-		Box boundingBox, landerBounds;
-		vector<Box> colBoxList;
-		vector<Box> bboxList;
+		Box boundingBox;
+
+		// additional forces
+		ofVec3f gravityForce = ofVec3f(0,-5,0);
+		ofVec3f groundForce = ofVec3f(0,0,0);
+		ofVec3f forwardForce = ofVec3f(0, 0, 0);
+		ofVec3f sideForce = ofVec3f(0, 0, 0);
 
 		// temp gui objects
 		ofxIntSlider numLevels;
 		ofxPanel gui;
+
+		// keymap for movement
+		bool keymap[255];
 
 		void initLightingAndMaterials();
 };

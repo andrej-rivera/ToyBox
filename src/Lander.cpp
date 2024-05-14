@@ -5,11 +5,26 @@ void Lander::integrate() {
 
 	landerPosition += landerVelocity / ofGetFrameRate();
 	landerVelocity += landerAcceleration / ofGetFrameRate();
+	
+	// add other forces (like gravity)
+	for (ofVec3f *f : forces)
+	{
+		//cout << *f << endl;
+		landerVelocity += *f / ofGetFrameRate();
+	}
+	
 	landerVelocity *= damping;
 
 	model.setPosition(landerPosition.x, landerPosition.y, landerPosition.z);
+
+	//setup bounding box each movement frame
+	glm::vec3 min = model.getSceneMin() + landerPosition;
+	glm::vec3 max = model.getSceneMax() + landerPosition;
+	landerBounds = Box(Vector3(min.x, min.y, min.z), Vector3(max.x, max.y, max.z));
+
 	//cout << landerAcceleration << endl;
 }
+
 
 // integrator function for rotating the lander
 void Lander::angularIntegrate() {

@@ -21,12 +21,12 @@ void ofApp::setup(){
 
 
 	//setup octree
-	octree.create(map.getMesh(0), 20);
+	octree.create(map.getMesh(1), 10);
 
 
 	//temp gui stuff
 	gui.setup();
-	gui.add(numLevels.setup("Number of Octree Levels", 1, 1, 20));
+	gui.add(numLevels.setup("Number of Octree Levels", 1, 1, 10));
 
 
 	//setup lander
@@ -88,6 +88,7 @@ void ofApp::draw(){
 	ofNoFill();
 	ofSetColor(ofColor::white);
 	octree.draw(numLevels, 0);
+	octree.drawLeafNodes(octree.root);
 	Octree::drawBox(lander.landerBounds);
 
 	ofSetColor(ofColor::red);

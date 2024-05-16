@@ -98,12 +98,12 @@ void ofApp::draw(){
 	// draw octree
 	ofNoFill();
 	ofSetColor(ofColor::white);
-	for (Octree& o : octrees)
-	{
-		o.draw(numLevels, 0);
-		o.drawLeafNodes(o.root);
+	// for (Octree& o : octrees)
+	// {
+	// 	o.draw(numLevels, 0);
+	// 	o.drawLeafNodes(o.root);
 
-	}
+	// }
 	Octree::drawBox(lander.landerBounds);
 
 	ofSetColor(ofColor::red);
@@ -115,11 +115,6 @@ void ofApp::draw(){
 	ofPopMatrix();
 
 	cam.end();
-	
-	ofSetColor(255);
-	shader.begin();
-	ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
-	shader.end();
 }
 
 void ofApp::playerMove() {

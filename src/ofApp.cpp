@@ -21,8 +21,12 @@ void ofApp::setup(){
 
 
 	//setup octree
-	octree.create(map.getMesh(1), 10);
-
+	for (int i = 0; i < map.getMeshCount(); i++)
+	{
+		Octree o;
+		o.create(map.getMesh(i), 10);
+		octrees.push_back(o);
+	}
 
 	//temp gui stuff
 	gui.setup();
@@ -53,7 +57,11 @@ void ofApp::update(){
 	lander.angularIntegrate();
 
 	//handle collisions between lander & map
-	octree.intersect(lander.landerBounds, octree.root, lander.collisions);
+	for (Octree& o : octrees)
+	{
+		o.intersect(lander.landerBounds, o.root, lander.collisions);
+	}
+
 	if (lander.collisions.size() > 0)
 	{
 		lander.collisions.clear();
@@ -87,8 +95,12 @@ void ofApp::draw(){
 	// draw octree
 	ofNoFill();
 	ofSetColor(ofColor::white);
-	octree.draw(numLevels, 0);
-	octree.drawLeafNodes(octree.root);
+	for (Octree& o : octrees)
+	{
+		o.draw(numLevels, 0);
+		o.drawLeafNodes(o.root);
+
+	}
 	Octree::drawBox(lander.landerBounds);
 
 	ofSetColor(ofColor::red);

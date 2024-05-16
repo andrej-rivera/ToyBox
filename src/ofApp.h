@@ -33,7 +33,7 @@ class ofApp : public ofBaseApp{
 		ofEasyCam cam;
 
 		// collision objects
-		Octree octree;
+		vector<Octree> octrees;
 		Box boundingBox;
 
 		// additional forces

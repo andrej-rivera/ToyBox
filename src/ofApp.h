@@ -7,6 +7,7 @@
 #include  "ofxAssimpModelLoader.h"
 #include <glm/gtx/intersect.hpp>
 #include <glm/gtx/closest_point.hpp>
+#include <AudioSystem.h>
 
 class ofApp : public ofBaseApp{
 

@@ -36,6 +36,12 @@ void ofApp::setup(){
 	lander.forces.push_back(&forwardForce);
 	lander.forces.push_back(&sideForce);
 
+	// audio
+	if (!AudioSystem::isLoaded()) {
+		AudioSystem::setup();
+	}
+	AudioSystem::play(Sound::soundtrack);
+
 }
 
 //--------------------------------------------------------------
@@ -72,8 +78,8 @@ void ofApp::draw(){
 	cam.begin();
 	ofPushMatrix();
 	ofEnableLighting();              // shaded mode
-	// map.drawFaces();
-	map.drawWireframe();
+	map.drawFaces();
+	// map.drawWireframe();
 
 	lander.model.drawFaces();
 	lander.drawDebugArrow(); // draws heading vector & side vector arrows
@@ -194,6 +200,19 @@ void ofApp::keyPressed(int key){
 	default:
 		break;
 	}
+
+
+	// start thruster loop if it's not playing and player is moving
+	bool isMoving{false};
+	for (size_t i = 0; i < 7; i++) {
+		if (keymap[i]) {
+			isMoving = true;
+			break;
+		}
+	}
+	if (!AudioSystem::isPlaying(Sound::thruster) && isMoving) {
+		AudioSystem::play(Sound::thruster);
+	}
 }
 
 //--------------------------------------------------------------
@@ -237,6 +256,18 @@ void ofApp::keyReleased(int key){
 
 	default:
 		break;
+	}
+
+	// stop thruster loop if the player isn't moving
+	bool isMoving{false};
+	for (size_t i = 0; i < 7; i++) {
+		if (keymap[i]) {
+			isMoving = true;
+			break;
+		}
+	}
+	if (!isMoving) {
+		AudioSystem::stop(Sound::thruster);
 	}
 }
 

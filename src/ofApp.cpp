@@ -64,9 +64,15 @@ void ofApp::update(){
 		o.intersect(lander.landerBounds, o.root, lander.collisions);
 	}
 
-	if (lander.collisions.size() > 0)
+	if (lander.collisions.size() > 5)
 	{
 		lander.collisions.clear();
+		if (lander.landerVelocity.length() > 15) {
+			AudioSystem::play(Sound::explosion);
+			lander.landerVelocity.x = ofRandom(-10, 10);
+			lander.landerVelocity.z = ofRandom(-10, 10);
+			//cout << lander.landerVelocity << endl;
+		}
 		// lander.landerVelocity = -lander.landerVelocity;
 		lander.landerVelocity.y = -lander.landerVelocity.y;
 		groundForce = -lander.landerAcceleration + -gravityForce;

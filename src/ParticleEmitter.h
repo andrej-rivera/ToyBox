@@ -18,7 +18,7 @@ public:
 
 	void    integrate();
 	void    draw();
-	float Particle::age() {
+	float 	age() {
 		return (ofGetElapsedTimeMillis() - birthtime) / 1000.0;
 	}
 };

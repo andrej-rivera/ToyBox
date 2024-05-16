@@ -12,3 +12,5 @@ bin/data/.gitkeep
 *.make
 *.exe
 *.code-workspace
+src/midterm
+src/spatial_subidivision

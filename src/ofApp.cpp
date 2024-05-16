@@ -16,17 +16,17 @@ void ofApp::setup(){
 
 
 	//setup map
-	map.loadModel("geo/moon-houdini.obj");
+	map.loadModel("geo/environment.dae");
 	map.setScaleNormalization(false);
 
 
 	//setup octree
-	octree.create(map.getMesh(0), 10);
+	octree.create(map.getMesh(0), 20);
 
 
 	//temp gui stuff
 	gui.setup();
-	gui.add(numLevels.setup("Number of Octree Levels", 1, 1, 10));
+	gui.add(numLevels.setup("Number of Octree Levels", 1, 1, 20));
 
 
 	//setup lander
@@ -72,7 +72,8 @@ void ofApp::draw(){
 	cam.begin();
 	ofPushMatrix();
 	ofEnableLighting();              // shaded mode
-	map.drawFaces();
+	// map.drawFaces();
+	map.drawWireframe();
 
 	lander.model.drawFaces();
 	lander.drawDebugArrow(); // draws heading vector & side vector arrows

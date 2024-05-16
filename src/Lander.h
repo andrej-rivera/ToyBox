@@ -12,9 +12,8 @@ public:
 	
 	void setup() {
 		//setup model
-		model.loadModel("geo/lander.obj");
+		model.loadModel("geo/rocket.dae");
 		model.setScaleNormalization(false);
-		model.setScale(.5, .5, .5);
 		model.setPosition(0, 0, 0);
 
 		landerAngle = model.getRotationAngle(0);

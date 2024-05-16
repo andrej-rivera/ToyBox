@@ -4,17 +4,19 @@
 //  Kevin M. Smith
 //
 //  Simple Octree Implementation 11/10/2020
-// 
+//
 //  Copyright (c) by Kevin M. Smith
-//  Copying or use without permission is prohibited by law. 
+//  Copying or use without permission is prohibited by law.
 //
 
-
 #include "Octree.h"
- 
 
+const std::array<ofColor, 10> levelColors{
+	ofColor::red,		  ofColor::orangeRed, ofColor::orange, ofColor::yellow,
+	ofColor::yellowGreen, ofColor::green,	  ofColor::aqua,   ofColor::blue,
+	ofColor::indigo,	  ofColor::violet};
 
-//draw a box from a "Box" class  
+// draw a box from a "Box" class
 //
 void Octree::drawBox(const Box &box) {
 	Vector3 min = box.parameters[0];
@@ -28,9 +30,16 @@ void Octree::drawBox(const Box &box) {
 	ofDrawBox(p, w, h, d);
 }
 
+void Octree::drawBox(const Box &box, unsigned int level) {
+	ofPushStyle();
+	ofSetColor(levelColors[level]);
+	drawBox(box);
+	ofPopStyle();
+}
+
 // return a Mesh Bounding Box for the entire Mesh
 //
-Box Octree::meshBounds(const ofMesh & mesh) {
+Box Octree::meshBounds(const ofMesh &mesh) {
 	int n = mesh.getNumVertices();
 	ofVec3f v = mesh.getVertex(0);
 	ofVec3f max = v;
@@ -38,26 +47,32 @@ Box Octree::meshBounds(const ofMesh & mesh) {
 	for (int i = 1; i < n; i++) {
 		ofVec3f v = mesh.getVertex(i);
 
-		if (v.x > max.x) max.x = v.x;
-		else if (v.x < min.x) min.x = v.x;
+		if (v.x > max.x)
+			max.x = v.x;
+		else if (v.x < min.x)
+			min.x = v.x;
 
-		if (v.y > max.y) max.y = v.y;
-		else if (v.y < min.y) min.y = v.y;
+		if (v.y > max.y)
+			max.y = v.y;
+		else if (v.y < min.y)
+			min.y = v.y;
 
-		if (v.z > max.z) max.z = v.z;
-		else if (v.z < min.z) min.z = v.z;
+		if (v.z > max.z)
+			max.z = v.z;
+		else if (v.z < min.z)
+			min.z = v.z;
 	}
 	cout << "vertices: " << n << endl;
-//	cout << "min: " << min << "max: " << max << endl;
+	//	cout << "min: " << min << "max: " << max << endl;
 	return Box(Vector3(min.x, min.y, min.z), Vector3(max.x, max.y, max.z));
 }
 
-// getMeshPointsInBox:  return an array of indices to points in mesh that are contained 
+// getMeshPointsInBox:  return an array of indices to points in mesh that are
+// contained
 //                      inside the Box.  Return count of points found;
 //
-int Octree::getMeshPointsInBox(const ofMesh & mesh, const vector<int>& points,
-	Box & box, vector<int> & pointsRtn)
-{
+int Octree::getMeshPointsInBox(const ofMesh &mesh, const vector<int> &points,
+							   const Box &box, vector<int> &pointsRtn) {
 	int count = 0;
 	for (int i = 0; i < points.size(); i++) {
 		ofVec3f v = mesh.getVertex(points[i]);
@@ -69,12 +84,12 @@ int Octree::getMeshPointsInBox(const ofMesh & mesh, const vector<int>& points,
 	return count;
 }
 
-// getMeshFacesInBox:  return an array of indices to Faces in mesh that are contained 
+// getMeshFacesInBox:  return an array of indices to Faces in mesh that are
+// contained
 //                      inside the Box.  Return count of faces found;
 //
-int Octree::getMeshFacesInBox(const ofMesh & mesh, const vector<int>& faces,
-	Box & box, vector<int> & facesRtn)
-{
+int Octree::getMeshFacesInBox(const ofMesh &mesh, const vector<int> &faces,
+							  const Box &box, vector<int> &facesRtn) {
 	int count = 0;
 	for (int i = 0; i < faces.size(); i++) {
 		ofMeshFace face = mesh.getFace(faces[i]);
@@ -86,7 +101,7 @@ int Octree::getMeshFacesInBox(const ofMesh & mesh, const vector<int>& faces,
 		p[0] = Vector3(v[0].x, v[0].y, v[0].z);
 		p[1] = Vector3(v[1].x, v[1].y, v[1].z);
 		p[2] = Vector3(v[2].x, v[2].y, v[2].z);
-		if (box.inside(p,3)) {
+		if (box.inside(p, 3)) {
 			count++;
 			facesRtn.push_back(faces[i]);
 		}
@@ -96,7 +111,7 @@ int Octree::getMeshFacesInBox(const ofMesh & mesh, const vector<int>& faces,
 
 //  Subdivide a Box into eight(8) equal size boxes, return them in boxList;
 //
-void Octree::subDivideBox8(const Box &box, vector<Box> & boxList) {
+void Octree::subDivideBox8(const Box &box, vector<Box> &boxList) {
 	Vector3 min = box.parameters[0];
 	Vector3 max = box.parameters[1];
 	Vector3 size = max - min;
@@ -108,25 +123,27 @@ void Octree::subDivideBox8(const Box &box, vector<Box> & boxList) {
 
 	//  generate ground floor
 	//
-Box b[8];
-b[0] = Box(min, center);
-b[1] = Box(b[0].min() + Vector3(xdist, 0, 0), b[0].max() + Vector3(xdist, 0, 0));
-b[2] = Box(b[1].min() + Vector3(0, 0, zdist), b[1].max() + Vector3(0, 0, zdist));
-b[3] = Box(b[2].min() + Vector3(-xdist, 0, 0), b[2].max() + Vector3(-xdist, 0, 0));
+	Box b[8];
+	b[0] = Box(min, center);
+	b[1] = Box(b[0].min() + Vector3(xdist, 0, 0),
+			   b[0].max() + Vector3(xdist, 0, 0));
+	b[2] = Box(b[1].min() + Vector3(0, 0, zdist),
+			   b[1].max() + Vector3(0, 0, zdist));
+	b[3] = Box(b[2].min() + Vector3(-xdist, 0, 0),
+			   b[2].max() + Vector3(-xdist, 0, 0));
 
-boxList.clear();
-for (int i = 0; i < 4; i++)
-	boxList.push_back(b[i]);
+	boxList.clear();
+	for (int i = 0; i < 4; i++) boxList.push_back(b[i]);
 
-// generate second story
-//
-for (int i = 4; i < 8; i++) {
-	b[i] = Box(b[i - 4].min() + h, b[i - 4].max() + h);
-	boxList.push_back(b[i]);
+	// generate second story
+	//
+	for (int i = 4; i < 8; i++) {
+		b[i] = Box(b[i - 4].min() + h, b[i - 4].max() + h);
+		boxList.push_back(b[i]);
+	}
 }
-}
 
-void Octree::create(const ofMesh& geo, int numLevels) {
+void Octree::create(const ofMesh &geo, int numLevels) {
 	// initialize octree structure
 	//
 	mesh = geo;
@@ -136,8 +153,7 @@ void Octree::create(const ofMesh& geo, int numLevels) {
 		for (int i = 0; i < mesh.getNumVertices(); i++) {
 			root.points.push_back(i);
 		}
-	}
-	else {
+	} else {
 		// need to load face vertices here
 		//
 	}
@@ -148,119 +164,100 @@ void Octree::create(const ofMesh& geo, int numLevels) {
 	subdivide(mesh, root, numLevels, level);
 }
 
-
 //
 // subdivide:  recursive function to perform octree subdivision on a mesh
 //
 //  subdivide(node) algorithm:
-//     1) subdivide box in node into 8 equal side boxes - see helper function subDivideBox8().
-//     2) For each child box
-//            sort point data into each box  (see helper function getMeshFacesInBox())
-//        if a child box contains at least 1 point
+//     1) subdivide box in node into 8 equal side boxes - see helper function
+//     subDivideBox8(). 2) For each child box
+//            sort point data into each box  (see helper function
+//            getMeshFacesInBox())
+//        if a child box contains at list 1 point
 //            add child to tree
 //            if child is not a leaf node (contains more than 1 point)
 //               recursively call subdivide(child)
-//         
-//      
+//
+//
 
-void Octree::subdivide(const ofMesh& mesh, TreeNode& node, int numLevels, int level) {
+void Octree::subdivide(const ofMesh &mesh, TreeNode &node, int numLevels,
+					   int level) {
 	if (level >= numLevels) return;
 
 	// subdvide algorithm implemented here
 
-
-	// subdivide parent box into 8 child boxes
-	vector<Box> childBoxes; // create vector to store child boxes
+	// 1) subdivide box in node into 8 equal side boxes - see helper function
+	// subDivideBox8().
+	vector<Box> childBoxes{};
 	subDivideBox8(node.box, childBoxes);
-	// traverse child boxes
-	for (Box b : childBoxes)
-	{
-		vector<int> points;
 
-		int i = getMeshPointsInBox(mesh, node.points, b, points);
+	// 2) For each child box sort point data into each box (see
+	// helper function getMeshFacesInBox())
+	level++;
+	for (const Box &box : childBoxes) {
+		vector<int> pointsInBox{};
+		unsigned int pointCount{
+			getMeshPointsInBox(mesh, node.points, box, pointsInBox)};
 
-		// if i >= 1
-		if (i >= 1)
-		{
-			// create child tree node, assign mesh & points vars
-			TreeNode child;
-			child.box = b;
-			child.points = points;
+		// if a child box contains at least 1 point, add child to tree
+		if (pointCount > 0) {
+			node.children.push_back({box, std::move(pointsInBox)});
+		}
 
-			// add child to tree
-			node.children.push_back(child);
-			if (i > 1)
-			{
-				subdivide(mesh, node.children.back(), numLevels, level + 1);
-			}
+		// if child is not a leaf node (contains more than 1 point) recursively
+		// call subdivide(child)
+		if (pointCount > 1) {
+			subdivide(mesh, node.children.back(), numLevels, level);
 		}
 	}
-
 }
 
 // Implement functions below for Homework project
 //
 
-bool Octree::intersect(const Ray& ray, const TreeNode& node, TreeNode& nodeRtn) {
-	bool intersects = node.box.intersect(ray, 0, 10000);
-	//if ray intersects treeNode
-	if (intersects)
-	{
-		// return node if leaf node
-		if (node.children.empty()) 
-		{
-			nodeRtn = node;
-		}
-		// otherwise, recurse through tree
-		else
-		{
-			for (int i = 0; i < node.children.size(); i++) {
-				intersect(ray, node.children[i], nodeRtn);
-			}
+bool Octree::intersect(const Ray &ray, const TreeNode &node,
+					   TreeNode &nodeRtn) {
+	// no intersection
+	if (!node.box.intersect(ray, 0, 10000)) return false;
+
+	// no children, so this must be the leaf;
+	if (node.children.empty()) {
+		nodeRtn = node;
+		return true;
+	}
+
+	// has children, recurse on first intersection found
+	for (const TreeNode &child : node.children) {
+		if (intersect(ray, child, nodeRtn)) {
+			return true;
 		}
 	}
-	return intersects;
+	return false;
 }
 
-bool Octree::intersect(const Box &box, TreeNode & node, vector<Box> & boxListRtn) {
-	bool intersects = node.box.overlap(box);
-	if (intersects)
-	{
-		// push box onto list if leaf node
-		if (node.children.empty())
-		{
-			boxListRtn.push_back(node.box);
-		}
-		else 
-		{
-			//recurse into children
-			for (int i = 0; i < node.children.size(); i++) {
-				intersect(box, node.children[i], boxListRtn);
-			}
-		}
-		//cout << boxListRtn.size() << endl;
+bool Octree::intersect(const Box &box, const TreeNode &node,
+					   vector<Box> &boxListRtn) {
+	// no intersection
+	if (!node.box.overlap(box)) return false;
+
+	// no children, so this must be the leaf;
+	if (node.children.empty()) {
+		boxListRtn.emplace_back(node.box.min(), node.box.max());
+		return true;
 	}
-	return intersects;
+
+	// has children, recurse on first intersection found
+	bool isAnyChildIntersecting{false};
+	for (const TreeNode &child : node.children) {
+		if (intersect(box, child, boxListRtn)) {
+			isAnyChildIntersecting = true;
+		}
+	}
+	return isAnyChildIntersecting;
 }
 
-//void Octree::draw(TreeNode & node, int numLevels, int level) {
-//	if (level >= numLevels) return;
-//	// draw parent box
-//	drawBox(node.box);
-//
-//	// recursively call draw on children nodes
-//	for (TreeNode c : node.children)
-//	{
-//		//cout << c.points.size() << endl;
-//		draw(c, numLevels, level + 1);
-//	}
-//
-//}
-
-void Octree::draw(TreeNode& node, int numLevels, int level) {
+void Octree::draw(TreeNode &node, int numLevels, int level) {
 	if (level >= numLevels) return;
-	ofSetColor(colorArray[level% 5]);
-	drawBox(node.box);
+	drawBox(node.box, level);
 	level++;
 	for (int i = 0; i < node.children.size(); i++) {
 		draw(node.children[i], numLevels, level);
@@ -269,19 +266,4 @@ void Octree::draw(TreeNode& node, int numLevels, int level) {
 
 // Optional
 //
-void Octree::drawLeafNodes(TreeNode & node) {
-	ofSetColor(colorArray[4]);
-	if (node.children.empty())
-	{
-		drawBox(node.box);
-		return;
-	}
-	for (int i = 0; i < node.children.size(); i++) {
-		drawLeafNodes(node.children[i]);
-	}
-
-}
-
-
-
-
+void Octree::drawLeafNodes(TreeNode &node) {}

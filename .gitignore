@@ -1,6 +1,11 @@
 .vs
 bin/toybox_debug.pdb
 bin/toybox_debug.exe
-/obj
+obj
 addons.make
 config.make
+toybox.vcxproj.user
+toybox.vcxproj.filters
+toybox.vcxproj
+toybox.sln
+icon.rc

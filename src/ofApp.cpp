@@ -40,6 +40,8 @@ void ofApp::setup(){
 	lander.forces.push_back(&forwardForce);
 	lander.forces.push_back(&sideForce);
 
+	shader.load("shaders/test");
+
 	// audio
 	if (!AudioSystem::isLoaded()) {
 		AudioSystem::setup();
@@ -65,7 +67,8 @@ void ofApp::update(){
 	if (lander.collisions.size() > 0)
 	{
 		lander.collisions.clear();
-		lander.landerVelocity = -lander.landerVelocity; 
+		// lander.landerVelocity = -lander.landerVelocity;
+		lander.landerVelocity.y = -lander.landerVelocity.y;
 		groundForce = -lander.landerAcceleration + -gravityForce;
 	}
 	else {
@@ -109,11 +112,14 @@ void ofApp::draw(){
 		Octree::drawBox(collision);
 	}
 
-
 	ofPopMatrix();
 
-
 	cam.end();
+	
+	ofSetColor(255);
+	shader.begin();
+	ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
+	shader.end();
 }
 
 void ofApp::playerMove() {

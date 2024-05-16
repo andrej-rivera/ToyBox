@@ -50,4 +50,6 @@ class ofApp : public ofBaseApp{
 		bool keymap[255];
 
 		void initLightingAndMaterials();
+
+		ofShader shader{};
 };

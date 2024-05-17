@@ -163,7 +163,7 @@ void ofApp::update(){
 		lander.collisions.clear();
 
 		lander.landerVelocity.y = -lander.landerVelocity.y;
-		lander.landerVelocity.y *= 0.5;
+		//lander.landerVelocity.y *= 0.5;
 
 		if (lander.landerVelocity.length() > 4) {
 			AudioSystem::play(Sound::explosion);
@@ -297,7 +297,7 @@ void ofApp::draw(){
 	}
 
 	if (playerWon) {
-		ofDrawBitmapStringHighlight("Push O to restart.", ofGetWindowWidth() / 2 - 50, ofGetWindowHeight() / 2 - 25, ofColor::black, ofColor::white);
+		ofDrawBitmapStringHighlight("Push O to restart.", ofGetWindowWidth() / 2 - 50, ofGetWindowHeight() / 2, ofColor::black, ofColor::white);
 		ofDrawBitmapStringHighlight("Score: " + ofToString(score, 2), ofGetWindowWidth() / 2, ofGetWindowHeight() / 2 - 25, ofColor::black);
 	}
 

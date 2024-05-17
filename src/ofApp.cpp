@@ -36,14 +36,26 @@ void ofApp::setup(){
 	//temp gui stuff
 	gui.setup();
 	gui.add(numLevels.setup("Number of Octree Levels", 1, 1, 10));
-
+	//gui.add(platformPos.setup("Box Position: ", ofVec3f(2,0,0), ofVec3f(-10, -10, -10), ofVec3f(10, 10, 10)));
 
 	//setup lander
 	lander.setup();
+	lander.landerPosition.set(0, 5, 0);
 	lander.forces.push_back(&gravityForce);
 	lander.forces.push_back(&groundForce);
 	lander.forces.push_back(&forwardForce);
 	lander.forces.push_back(&sideForce);
+
+	//win platform boxes
+	platform1 = Box(Vector3(-1.8, 0, 1), Vector3(-0.8, 1, 2));
+	platform2 = Box(Vector3(7, 4, -3.5), Vector3(8, 5, -2.5));
+	platform3 = Box(Vector3(-8.5, 5.7, -4.8), Vector3(-7.5, 6.7, -3.8));
+
+
+	platforms.push_back(&platform1);
+	platforms.push_back(&platform2);
+	platforms.push_back(&platform3);
+
 
 	// audio
 	if (!AudioSystem::isLoaded()) {
@@ -55,11 +67,18 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+	if (!startGame)
+		return;
+
 	playerMove();
+	//ofVec3f pos = platformPos;
+	//platform2.setOrigin(Vector3(pos.x, pos.y, pos.z));
 
 	//integrate lander
 	lander.integrate();
 	lander.angularIntegrate();
+
+
 
 	//handle collisions between lander & map
 	for (Octree& o : octrees)
@@ -67,22 +86,41 @@ void ofApp::update(){
 		o.intersect(lander.landerBounds, o.root, lander.collisions);
 	}
 
-	if (lander.collisions.size() > 5)
+	if (lander.collisions.size() > 0)
 	{
 		lander.collisions.clear();
+
+		lander.landerVelocity.y = -lander.landerVelocity.y;
+
 		if (lander.landerVelocity.length() > 4) {
 			AudioSystem::play(Sound::explosion);
-			lander.landerVelocity.x = ofRandom(-10, 10);
-			lander.landerVelocity.z = ofRandom(-10, 10);
+			lander.landerVelocity.y = lander.landerVelocity.y * 5;
+			lander.landerVelocity.x = ofRandom(-10, 10) * 5;
+			lander.landerVelocity.z = ofRandom(-10, 10) * 5;
 			//cout << lander.landerVelocity << endl;
 		}
-		// lander.landerVelocity = -lander.landerVelocity;
-		lander.landerVelocity.y = -lander.landerVelocity.y;
 		groundForce = -lander.landerAcceleration + -gravityForce;
 	}
 	else {
 		groundForce = ofVec3f(0, 0, 0);
 	}
+
+
+	//handle landing on win platforms
+	for (int i = 0; i < platforms.size(); i++)
+	{
+		Box b = *platforms[i];
+		if (b.overlap(lander.landerBounds))
+		{
+			platformsLanded[i] = true;
+			if (platformsLanded[0] && platformsLanded[1] && platformsLanded[2])
+			{
+				playerWon = true;
+				cout << "You Won!" << endl;
+			}
+		}
+	}
+
 
 	// camera stuff
 	if (activeCamera == &trackingCamera) {
@@ -102,7 +140,6 @@ void ofApp::draw(){
 
 	ofFill();
 	ofSetColor(ofColor::blue);
-	gui.draw();
 
 
 	activeCamera->begin();
@@ -114,6 +151,8 @@ void ofApp::draw(){
 	lander.model.drawFaces();
 	lander.drawDebugArrow(); // draws heading vector & side vector arrows
 
+
+
 	// draw octree
 	ofNoFill();
 	ofSetColor(ofColor::white);
@@ -123,6 +162,12 @@ void ofApp::draw(){
 	// 	o.drawLeafNodes(o.root);
 
 	// }
+
+	ofSetColor(ofColor::green);
+	for (Box* b : platforms)
+	{
+		Octree::drawBox(*b);
+	}
 	Octree::drawBox(lander.landerBounds);
 
 	ofSetColor(ofColor::red);
@@ -134,9 +179,16 @@ void ofApp::draw(){
 	ofPopMatrix();
 
 	activeCamera->end();
+
+	ofDisableDepthTest();
+	ofDrawBitmapString(("Remaining Fuel: ", fuelCount), 300, 500);
+	gui.draw();
+	ofEnableDepthTest();
 }
 
 void ofApp::playerMove() {
+	if (outtaFuel)
+		return;
 
 	// rotation
 	if (keymap[0] == true) { // rotate spacecraft clockwise (about Y (UP) axis)
@@ -197,6 +249,11 @@ void ofApp::playerMove() {
 void ofApp::keyPressed(int key){
 	switch (key) {
 	
+	// Start/Restart Game
+	case ' ':
+		if (!startGame)
+			startGame = true;
+
 	// Camera controls
 
 	case OF_KEY_TAB:
@@ -251,6 +308,8 @@ void ofApp::keyPressed(int key){
 		break;
 	}
 
+	if (!startGame)
+		return;
 
 	// start thruster loop if it's not playing and player is moving
 	bool isMoving{false};
@@ -260,9 +319,16 @@ void ofApp::keyPressed(int key){
 			break;
 		}
 	}
-	if (!AudioSystem::isPlaying(Sound::thruster) && isMoving) {
+	if (!AudioSystem::isPlaying(Sound::thruster) && isMoving && !outtaFuel) {
 		AudioSystem::play(Sound::thruster);
 	}
+
+	//fuel guage
+	if (isMoving) 
+		fuelCount -= ofGetLastFrameTime();
+	
+	if (fuelCount <= 0)
+		outtaFuel = true;
 }
 
 //--------------------------------------------------------------

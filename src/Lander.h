@@ -24,7 +24,7 @@ public:
 	void angularIntegrate();
 	void drawDebugArrow();
 
-	ofVec3f landerPosition = ofVec3f(0, 50, 0);
+	ofVec3f landerPosition = ofVec3f(0, 0, 0);
 	ofVec3f landerVelocity = ofVec3f(0, 0, 0);
 	ofVec3f landerAcceleration = ofVec3f(0, 0, 0);
 

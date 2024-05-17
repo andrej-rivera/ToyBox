@@ -26,6 +26,13 @@ class Box {
     // (t0, t1) is the interval for valid hits
     bool intersect(const Ray &, float t0, float t1) const;
 
+	void setOrigin(Vector3 &v)
+	{
+		Vector3 difference = parameters[1] - parameters[0];
+		parameters[0] = v;
+		parameters[1] = parameters[0] + difference;
+	}
+
     // corners
     Vector3 parameters[2];
 

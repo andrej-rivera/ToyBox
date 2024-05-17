@@ -5,12 +5,15 @@ void Lander::integrate() {
 
 	landerPosition += landerVelocity * ofGetLastFrameTime();
 	landerVelocity += landerAcceleration * ofGetLastFrameTime();
-	
+	//landerVelocity += landerAcceleration / ofGetFrameRate();
+
 	// add other forces (like gravity)
 	for (ofVec3f *f : forces)
 	{
 		//cout << *f << endl;
 		landerVelocity += *f * ofGetLastFrameTime();
+		//landerVelocity += *f / ofGetFrameRate();
+
 	}
 	
 	landerVelocity *= damping;

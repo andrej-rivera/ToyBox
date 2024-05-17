@@ -31,9 +31,23 @@ class ofApp : public ofBaseApp{
 		ofxAssimpModelLoader map;
 		Lander lander;
 
+		// game states
+		bool startGame = false;
+		bool playerWon = false;
+		bool outtaFuel = false;
+		float fuelCount = 120.0f;
+
+
 		// collision objects
 		vector<Octree> octrees;
 		Box boundingBox;
+		
+		// landing zones
+		Box platform1;
+		Box platform2;
+		Box platform3;
+		vector<Box*> platforms;
+		bool platformsLanded[3] = { false, false, false };
 
 		// additional forces
 		ofVec3f gravityForce = ofVec3f(0,-5,0);
@@ -43,6 +57,7 @@ class ofApp : public ofBaseApp{
 
 		// temp gui objects
 		ofxIntSlider numLevels;
+		ofxVec3Slider platformPos;
 		ofxPanel gui;
 
 		// keymap for movement

@@ -49,7 +49,7 @@ void ofApp::setup(){
 
 	//setup freecam
 	freeCamera.setDistance(10);
-	freeCamera.setNearClip(.1);
+	freeCamera.setNearClip(0.1f);
 	freeCamera.setFov(65.5);   // approx equivalent to 28mm in 35mm format
 	freeCamera.disableMouseInput();
 	ofEnableSmoothing();
@@ -57,6 +57,7 @@ void ofApp::setup(){
 
 	// camera stuff
 	trackingCamera.setPosition({0, 12, 16});
+	trackingCamera.setNearClip(0.1f);
 	onboardCamera.setNearClip(0.1f);
 	activeCamera = &freeCamera;
 

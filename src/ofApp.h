@@ -65,6 +65,8 @@ class ofApp : public ofBaseApp{
 
 		void initLightingAndMaterials();
 
+		ofImage background{};
+
 		// lights
 		ofLight keyLight{};
 		ofLight backLight{};

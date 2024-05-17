@@ -21,6 +21,10 @@ void ofApp::setup(){
 	// lighting
 	initLightingAndMaterials();
 
+	// setup background
+	background.load("images/stars.jpg");
+	background.setAnchorPercent(0.5f, 0.5f);
+
 	// setup map
 	map.loadModel("geo/environment.dae");
 	map.setScaleNormalization(false);
@@ -157,6 +161,7 @@ void ofApp::update(){
 		onboardCamera.dolly(0.3f);
 	}
 
+	// emitters
 	lander.emitter.position = lander.landerPosition;
 	lander.emitter.update();
 	explosionEmitter.update();
@@ -164,7 +169,11 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-	ofBackground(ofColor::black);
+	
+	ofDisableDepthTest();
+	ofSetColor(255);
+	background.draw(ofGetWindowWidth() / 2, ofGetWindowHeight() / 2);
+	ofEnableDepthTest();
 
 	ofFill();
 	ofSetColor(ofColor::blue);
@@ -470,7 +479,7 @@ void ofApp::mouseExited(int x, int y){
 
 //--------------------------------------------------------------
 void ofApp::windowResized(int w, int h){
-
+	
 }
 
 //--------------------------------------------------------------

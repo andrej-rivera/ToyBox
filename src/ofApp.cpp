@@ -3,11 +3,12 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 
-	//setup cam
+	ofSetVerticalSync(true);
+
+	//setup freecam
 	freeCamera.setDistance(10);
 	freeCamera.setNearClip(.1);
 	freeCamera.setFov(65.5);   // approx equivalent to 28mm in 35mm format
-	ofSetVerticalSync(true);
 	freeCamera.disableMouseInput();
 	ofEnableSmoothing();
 	ofEnableDepthTest();
@@ -17,13 +18,12 @@ void ofApp::setup(){
 	onboardCamera.setNearClip(0.1f);
 	activeCamera = &freeCamera;
 
+	// lighting
 	initLightingAndMaterials();
-
 
 	// setup map
 	map.loadModel("geo/environment.dae");
 	map.setScaleNormalization(false);
-
 
 	// setup octree
 	for (int i = 0; i < map.getMeshCount(); i++)
@@ -141,10 +141,17 @@ void ofApp::draw(){
 	ofFill();
 	ofSetColor(ofColor::blue);
 
-
 	activeCamera->begin();
 	ofPushMatrix();
+
 	ofEnableLighting();              // shaded mode
+
+	keyLight.enable();
+	backLight.enable();
+	for (size_t i = 0; i < landingPadLights.size(); i++) {
+		landingPadLights[i].enable();
+	}
+
 	map.drawFaces();
 	// map.drawWireframe();
 
@@ -175,6 +182,14 @@ void ofApp::draw(){
 	{
 		Octree::drawBox(collision);
 	}
+
+	// disable lighting
+	for (size_t i = 0; i < landingPadLights.size(); i++) {
+		landingPadLights[i].disable();
+	}
+	keyLight.disable();
+	backLight.disable();
+	ofDisableLighting();
 
 	ofPopMatrix();
 
@@ -465,4 +480,24 @@ void ofApp::initLightingAndMaterials() {
 	glEnable(GL_LIGHT0);
 	//	glEnable(GL_LIGHT1);
 	glShadeModel(GL_SMOOTH);
+
+
+	keyLight.setAreaLight(32, 32);
+	keyLight.setDiffuseColor(ofColor::blueViolet);
+	keyLight.setPosition(32, 32, 0);
+	keyLight.lookAt({0, 0, 0});
+
+	backLight.setAreaLight(32, 32);
+	backLight.setDiffuseColor(ofColor::lightGray);
+	backLight.setPosition(-32, 32, 0);
+	backLight.lookAt({0, 0, 0});
+
+	for (size_t i = 0; i < landingPadLights.size(); i++) {
+		landingPadLights[i].setPointLight();
+		landingPadLights[i].setDiffuseColor(ofColor::red);
+		landingPadLights[i].setAttenuation(1.0f, 0.0f, 0.1f);
+	}
+	landingPadLights[0].setPosition(-1.3f, 1.0f, 1.5f);
+	landingPadLights[1].setPosition(7.5f, 4.5f, -3.0f);
+	landingPadLights[2].setPosition(-8.0f, 6.2f, -4.3f);
 }

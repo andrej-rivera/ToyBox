@@ -69,4 +69,8 @@ class ofApp : public ofBaseApp{
 		ofEasyCam freeCamera{};
 		ofCamera trackingCamera{};
 		ofCamera onboardCamera{};
+
+		ofLight keyLight{};
+		ofLight backLight{};
+		std::array<ofLight, 3> landingPadLights{};
 };

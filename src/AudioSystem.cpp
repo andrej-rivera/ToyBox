@@ -13,6 +13,8 @@ void AudioSystem::setup() {
 
 	sounds[Sound::explosion].load("audio/explosion.wav");
 	sounds[Sound::explosion].setMultiPlay(true);
+	sounds[Sound::explosion].setVolume(0.5f);
+
 }
 
 bool AudioSystem::isLoaded() {

@@ -51,6 +51,8 @@ class ofApp : public ofBaseApp{
 		ofVec3f mouseDownPos;
 		ofVec3f mouseLastPos;
 
+		float BOOMBOBOBOBMBMTHRESHOLDLIMITOHNO{1.0f};
+
 
 		// landing zones
 		Box platform1;
@@ -60,7 +62,7 @@ class ofApp : public ofBaseApp{
 		bool platformsLanded[3] = { false, false, false };
 
 		// additional forces
-		ofVec3f gravityForce = ofVec3f(0,-5,0);
+		ofVec3f gravityForce = ofVec3f(0, -0.5f,0);
 		ofVec3f groundForce = ofVec3f(0,0,0);
 		ofVec3f forwardForce = ofVec3f(0, 0, 0);
 		ofVec3f sideForce = ofVec3f(0, 0, 0);

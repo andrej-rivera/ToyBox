@@ -38,9 +38,9 @@ public:
 	float angularVelocity = 0;
 	float angularAcceleration = 0;
 
-	float landerThrust = 10;
-	float damping = 0.98;
-	float angularDamping = 0.98;
+	float landerThrust = 1.0f;
+	float damping = 0.999f;
+	float angularDamping = 0.99f;
 
 	bool thrust;
 

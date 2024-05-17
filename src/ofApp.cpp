@@ -11,10 +11,11 @@ void ofApp::restart(){
 	bool platformsLanded[3] = { false, false, false };
 
 	//setup freecam
-	freeCamera.setDistance(10);
 	freeCamera.setNearClip(.1);
 	freeCamera.setFov(65.5);   // approx equivalent to 28mm in 35mm format
 	freeCamera.disableMouseInput();
+	freeCamera.setPosition({0, 16, 16});
+	freeCamera.lookAt({0, 0, 0});
 	ofEnableSmoothing();
 	ofEnableDepthTest();
 
@@ -25,10 +26,12 @@ void ofApp::restart(){
 
 
 	//reset forces
-	gravityForce = ofVec3f(0, -5, 0);
+	gravityForce = ofVec3f(0, -0.5f, 0);
 	groundForce = ofVec3f(0, 0, 0);
 	forwardForce = ofVec3f(0, 0, 0);
 	sideForce = ofVec3f(0, 0, 0);
+	lander.landerVelocity = {};
+	lander.angularVelocity = {};
 
 	//setup lander
 	lander.setup();
@@ -37,7 +40,7 @@ void ofApp::restart(){
 	lander.forces.push_back(&groundForce);
 	lander.forces.push_back(&forwardForce);
 	lander.forces.push_back(&sideForce);
-	lander.model.setPosition(0, 2, 0);
+	lander.model.setPosition(0, 10, 0);
 }
 
 //--------------------------------------------------------------
@@ -48,10 +51,11 @@ void ofApp::setup(){
 
 
 	//setup freecam
-	freeCamera.setDistance(10);
 	freeCamera.setNearClip(0.1f);
 	freeCamera.setFov(65.5);   // approx equivalent to 28mm in 35mm format
 	freeCamera.disableMouseInput();
+	freeCamera.setPosition({0, 16, 16});
+	freeCamera.lookAt({0, 0, 0});
 	ofEnableSmoothing();
 	ofEnableDepthTest();
 
@@ -92,7 +96,7 @@ void ofApp::setup(){
 	lander.forces.push_back(&groundForce);
 	lander.forces.push_back(&forwardForce);
 	lander.forces.push_back(&sideForce);
-	lander.model.setPosition(0,2,0);
+	lander.model.setPosition(0, 10, 0);
 
 	//win platform boxes
 	platform1 = Box(Vector3(-1.8, 0, 1), Vector3(-0.8, 1, 2));
@@ -164,10 +168,10 @@ void ofApp::update(){
 	{
 		lander.collisions.clear();
 
-		lander.landerVelocity.y = -lander.landerVelocity.y;
+		lander.landerVelocity.y = std::abs(lander.landerVelocity.y) * 0.5f;
 		//lander.landerVelocity.y *= 0.5;
 
-		if (lander.landerVelocity.length() > 4) {
+		if (lander.landerVelocity.length() > BOOMBOBOBOBMBMTHRESHOLDLIMITOHNO) {
 			AudioSystem::play(Sound::explosion);
 			lander.landerVelocity.y = lander.landerVelocity.y * 5;
 			lander.landerVelocity.x = ofRandom(-10, 10) * 5;
@@ -191,7 +195,7 @@ void ofApp::update(){
 		if (b.overlap(lander.landerBounds) && !platformsLanded[i])
 		{
 			platformsLanded[i] = true;
-			if (lander.landerVelocity.length() > 4){
+			if (lander.landerVelocity.length() > BOOMBOBOBOBMBMTHRESHOLDLIMITOHNO){
 				score += 500;
 			}
 			else{
@@ -231,8 +235,8 @@ void ofApp::draw(){
 	background.draw(ofGetWindowWidth() / 2, ofGetWindowHeight() / 2);
 	ofEnableDepthTest();
 
-	ofFill();
-	ofSetColor(ofColor::blue);
+	// ofFill();
+	// ofSetColor(ofColor::blue);
 
 	activeCamera->begin();
 	ofPushMatrix();
@@ -249,14 +253,14 @@ void ofApp::draw(){
 	// map.drawWireframe();
 
 	lander.model.drawFaces();
-	lander.drawDebugArrow(); // draws heading vector & side vector arrows
+	// lander.drawDebugArrow(); // draws heading vector & side vector arrows
 
 	lander.emitter.draw();
 	explosionEmitter.draw();
 
 	// draw octree
-	ofNoFill();
-	ofSetColor(ofColor::white);
+	// ofNoFill();
+	// ofSetColor(ofColor::white);
 	// for (Octree& o : octrees)
 	// {
 	// 	o.draw(numLevels, 0);
@@ -264,18 +268,18 @@ void ofApp::draw(){
 
 	// }
 
-	ofSetColor(ofColor::green);
-	for (Box* b : platforms)
-	{
-		Octree::drawBox(*b);
-	}
-	Octree::drawBox(lander.landerBounds);
+	// ofSetColor(ofColor::green);
+	// for (Box* b : platforms)
+	// {
+	// 	Octree::drawBox(*b);
+	// }
+	// Octree::drawBox(lander.landerBounds);
 
-	ofSetColor(ofColor::red);
-	for (Box& collision : lander.collisions)
-	{
-		Octree::drawBox(collision);
-	}
+	// ofSetColor(ofColor::red);
+	// for (Box& collision : lander.collisions)
+	// {
+	// 	Octree::drawBox(collision);
+	// }
 
 	// disable lighting
 	for (size_t i = 0; i < landingPadLights.size(); i++) {
@@ -299,13 +303,13 @@ void ofApp::draw(){
 	}
 
 	if (playerWon) {
-		ofDrawBitmapStringHighlight("Push O to restart.", ofGetWindowWidth() / 2 - 50, ofGetWindowHeight() / 2, ofColor::black, ofColor::white);
+		ofDrawBitmapStringHighlight("Push [R] to restart.", ofGetWindowWidth() / 2 - 50, ofGetWindowHeight() / 2, ofColor::black, ofColor::white);
 		ofDrawBitmapStringHighlight("Score: " + ofToString(score, 2), ofGetWindowWidth() / 2, ofGetWindowHeight() / 2 - 25, ofColor::black);
 	}
 
 	ofDrawBitmapString("Score: " + ofToString(score, 2), 50, 100);
 	if (!noScan) {
-		cout << altitude << endl;
+		// cout << altitude << endl;
 		ofDrawBitmapString("Altitude (AGL): " + ofToString(altitude, 2), 50, 125);
 	}
 	else {
@@ -313,7 +317,7 @@ void ofApp::draw(){
 	}
 	ofDrawBitmapString("Remaining Fuel: " + ofToString(fuelCount,2), 50, 150);
 
-	if (lander.landerVelocity.length() > 4)
+	if (lander.landerVelocity.length() > BOOMBOBOBOBMBMTHRESHOLDLIMITOHNO)
 		ofSetColor(ofColor::red);
 
 	ofDrawBitmapString("Speed: " + ofToString(lander.landerVelocity.length(), 2), 50, 175);
@@ -328,10 +332,10 @@ void ofApp::playerMove() {
 
 	// rotation
 	if (keymap[0] == true) { // rotate spacecraft clockwise (about Y (UP) axis)
-		lander.angularAcceleration = -lander.landerThrust * 10;
+		lander.angularAcceleration = -lander.landerThrust * 40;
 	}
 	if (keymap[1] == true) { // rotate spacecraft counter-clockwise (about Y (UP) axis)
-		lander.angularAcceleration = lander.landerThrust * 10;
+		lander.angularAcceleration = lander.landerThrust * 40;
 	}
 
 	// Y thrust
@@ -389,9 +393,11 @@ void ofApp::keyPressed(int key){
 	case ' ':
 		if (!startGame)
 			startGame = true;
+		
+		freeCamera.lookAt(lander.landerPosition);
 		break;
 
-	case 'o':
+	case 'r':
 		if(startGame)
 			restart();
 		break;
@@ -411,9 +417,6 @@ void ofApp::keyPressed(int key){
 		break;
 	case OF_KEY_ALT:
 		freeCamera.enableMouseInput();
-		break;
-	case 'r':
-		freeCamera.lookAt(lander.landerPosition);
 		break;
 
 	// toggle AGL
@@ -460,7 +463,7 @@ void ofApp::keyPressed(int key){
 
 	// start thruster loop if it's not playing and player is moving
 	bool isMoving{false};
-	for (size_t i = 0; i < 7; i++) {
+	for (size_t i = 0; i < 8; i++) {
 		if (keymap[i]) {
 			isMoving = true;
 			break;
@@ -527,7 +530,7 @@ void ofApp::keyReleased(int key){
 
 	// stop thruster loop if the player isn't moving
 	bool isMoving{false};
-	for (size_t i = 0; i < 7; i++) {
+	for (size_t i = 0; i < 8; i++) {
 		if (keymap[i]) {
 			isMoving = true;
 			break;

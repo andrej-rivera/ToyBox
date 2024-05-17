@@ -18,8 +18,8 @@ void Lander::integrate() {
 	}
 	
 	// add turbulence to particle for some randomness
-	ofVec3f turbulence = ofVec3f(ofRandom(0.9, 1), 1, ofRandom(0.9, 1));
-	landerVelocity *= turbulence;
+	ofVec3f turbulence = ofVec3f(ofRandom(-0.001f, 0.001f), ofRandom(-0.001f, 0.001f), ofRandom(-0.001f, 0.001f));
+	landerVelocity += turbulence;
 	landerVelocity *= damping;
 
 	model.setPosition(landerPosition.x, landerPosition.y, landerPosition.z);

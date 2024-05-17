@@ -132,6 +132,9 @@ void ofApp::update(){
 		onboardCamera.tilt(-75.0f);
 		onboardCamera.dolly(0.3f);
 	}
+
+	lander.emitter.position = lander.landerPosition;
+	lander.emitter.update();
 }
 
 //--------------------------------------------------------------
@@ -158,7 +161,7 @@ void ofApp::draw(){
 	lander.model.drawFaces();
 	lander.drawDebugArrow(); // draws heading vector & side vector arrows
 
-
+	lander.emitter.draw();
 
 	// draw octree
 	ofNoFill();
@@ -344,6 +347,10 @@ void ofApp::keyPressed(int key){
 	
 	if (fuelCount <= 0)
 		outtaFuel = true;
+
+	if (isMoving && !lander.emitter.started) {
+		lander.emitter.started = true;
+	}
 }
 
 //--------------------------------------------------------------
@@ -399,6 +406,7 @@ void ofApp::keyReleased(int key){
 	}
 	if (!isMoving) {
 		AudioSystem::stop(Sound::thruster);
+		lander.emitter.started = false;
 	}
 }
 

@@ -11,22 +11,21 @@ Particle::Particle() {
 	position.set(0, 0, 0);
 	lifespan = 2.5;
 	birthtime = 0;
-	radius = .01;
-	damping = .99;
+	radius = .02f;
+	damping = 0.8f;
 	mass = 1;
 
 	color = ofColor::red;
 }
 
 void Particle::draw() {
-
 	ofSetColor(color);
-	ofDrawSphere(position, radius);
+	ofDrawSphere(position, radius + ofRandom(-0.05f, 0.05f));
 }
 
 void Particle::integrate() {
-	position += velocity / ofGetFrameRate();
-	velocity += acceleration / ofGetFrameRate();
+	position += velocity * ofGetLastFrameTime();
+	velocity += acceleration * ofGetLastFrameTime();
 	velocity *= damping;
 }
 
@@ -34,13 +33,13 @@ void Particle::integrate() {
 
 ParticleEmitter::ParticleEmitter() {
 	// initialize emitter with base values
-	rate = 100;
-	radius = 0.25;
-	velocity = ofVec3f(0, 10, 0);
-	lifespan = 2.5;
+	rate = 16;
+	radius = 0.05f;
+	velocity = ofVec3f(0, -10, 0);
+	lifespan = 0.5f;
 	started = false;
 	lastSpawned = 0;
-	amount = 25;
+	amount = 8;
 }
 
 void ParticleEmitter::integrate() {

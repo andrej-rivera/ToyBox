@@ -81,6 +81,25 @@ void ofApp::update(){
 	lander.integrate();
 	lander.angularIntegrate();
 
+	//altitude counter
+	Ray ray = Ray(Vector3(lander.landerPosition.x, lander.landerPosition.y, lander.landerPosition.z),
+		Vector3(0,-1,0));
+	float closestDistance = 1000;
+	for (Octree& o : octrees)
+	{
+		TreeNode node;
+		bool hit = o.intersect(ray, o.root, node);
+		if (!hit)
+			break;
+
+		float d = lander.landerBounds.min().length() - node.box.max().length();
+		if (d < closestDistance && d > 0)
+		{
+			closestDistance = d;
+		}
+	}
+	if (closestDistance != 1000)
+		altitude = closestDistance;
 
 
 	//handle collisions between lander & map
@@ -206,7 +225,9 @@ void ofApp::draw(){
 	activeCamera->end();
 
 	ofDisableDepthTest();
-	ofDrawBitmapString(("Remaining Fuel: ", fuelCount), 300, 500);
+	ofDrawBitmapString("Remaining Fuel: " + ofToString(fuelCount), 100, 200);
+	ofDrawBitmapString("Altitude (AGL): " + ofToString(altitude), 100, 250);
+
 	gui.draw();
 	ofEnableDepthTest();
 }

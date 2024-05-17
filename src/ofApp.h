@@ -36,7 +36,7 @@ class ofApp : public ofBaseApp{
 		bool playerWon = false;
 		bool outtaFuel = false;
 		float fuelCount = 120.0f;
-
+		float altitude;
 
 		// collision objects
 		vector<Octree> octrees;

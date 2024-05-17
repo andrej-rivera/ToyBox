@@ -27,6 +27,8 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
+		glm::vec3 getMousePointOnPlane(glm::vec3 planePt, glm::vec3 planeNorm);
+
 
 		ofxAssimpModelLoader map;
 		Lander lander;
@@ -37,11 +39,17 @@ class ofApp : public ofBaseApp{
 		bool outtaFuel = false;
 		float fuelCount = 120.0f;
 		float altitude;
+		float score;
 
 		// collision objects
 		vector<Octree> octrees;
 		Box boundingBox;
-		
+		bool selectedLander;
+		bool inDrag;
+		ofVec3f mouseDownPos;
+		ofVec3f mouseLastPos;
+
+
 		// landing zones
 		Box platform1;
 		Box platform2;

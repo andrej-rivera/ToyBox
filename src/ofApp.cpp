@@ -44,11 +44,12 @@ void ofApp::setup(){
 
 	//setup lander
 	lander.setup();
-	lander.landerPosition.set(0, 5, 0);
+	lander.landerPosition.set(0, 2, 0);
 	lander.forces.push_back(&gravityForce);
 	lander.forces.push_back(&groundForce);
 	lander.forces.push_back(&forwardForce);
 	lander.forces.push_back(&sideForce);
+	lander.model.setPosition(0,2,0);
 
 	//win platform boxes
 	platform1 = Box(Vector3(-1.8, 0, 1), Vector3(-0.8, 1, 2));
@@ -75,7 +76,10 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
 	if (!startGame)
+	{
+		lander.landerPosition.set(lander.model.getPosition());
 		return;
+	}
 
 	playerMove();
 	//ofVec3f pos = platformPos;
@@ -138,18 +142,24 @@ void ofApp::update(){
 	for (int i = 0; i < platforms.size(); i++)
 	{
 		Box b = *platforms[i];
-		if (b.overlap(lander.landerBounds))
+		if (b.overlap(lander.landerBounds) && !platformsLanded[i])
 		{
 			platformsLanded[i] = true;
-			if (platformsLanded[0] && platformsLanded[1] && platformsLanded[2])
-			{
-				playerWon = true;
-				cout << "You Won!" << endl;
+			if (lander.landerVelocity.length() > 4){
+				score += 500;
 			}
+			else{
+				score += 1000;
+			}
+
 		}
 	}
 
-
+	if (platformsLanded[0] && platformsLanded[1] && platformsLanded[2])
+	{
+		playerWon = true;
+		cout << "You Won!" << endl;
+	}
 	// camera stuff
 	if (activeCamera == &trackingCamera) {
 		trackingCamera.lookAt(lander.landerPosition);
@@ -234,8 +244,22 @@ void ofApp::draw(){
 	activeCamera->end();
 
 	ofDisableDepthTest();
-	ofDrawBitmapString("Remaining Fuel: " + ofToString(fuelCount), 100, 200);
-	ofDrawBitmapString("Altitude (AGL): " + ofToString(altitude), 100, 250);
+
+	ofSetColor(ofColor::white);
+	
+	if (!startGame) {
+		ofDrawBitmapString("Press Spacebar to Launch! Drag the rocket to move it.", ofGetWindowWidth() / 2 - 150, ofGetWindowHeight() / 2);
+		ofDrawBitmapString("Drag the rocket to move it.", ofGetWindowWidth() / 2 - 50, ofGetWindowHeight() / 2 - 25);
+	}
+
+	ofDrawBitmapString("Score: " + ofToString(score, 2), 50, 100);
+	ofDrawBitmapString("Altitude (AGL): " + ofToString(altitude,2), 50, 125);
+	ofDrawBitmapString("Remaining Fuel: " + ofToString(fuelCount,2), 50, 150);
+
+	if (lander.landerVelocity.length() > 4)
+		ofSetColor(ofColor::red);
+
+	ofDrawBitmapString("Speed: " + ofToString(lander.landerVelocity.length(), 2), 50, 175);
 
 	gui.draw();
 	ofEnableDepthTest();
@@ -454,17 +478,66 @@ void ofApp::mouseMoved(int x, int y ){
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
+	if (freeCamera.getMouseInputEnabled() || startGame) return;
 
+	if (inDrag) {
+
+		glm::vec3 landerPos = lander.model.getPosition();
+
+		glm::vec3 mousePos = getMousePointOnPlane(landerPos, activeCamera->getZAxis());
+		glm::vec3 delta = mousePos - mouseLastPos;
+
+		landerPos += delta;
+		lander.model.setPosition(landerPos.x, landerPos.y, landerPos.z);
+		mouseLastPos = mousePos;
+
+		//ofVec3f min = lander.model.getSceneMin() + lander.model.getPosition();
+		//ofVec3f max = lander.model.getSceneMax() + lander.model.getPosition();
+
+		//Box bounds = Box(Vector3(min.x, min.y, min.z), Vector3(max.x, max.y, max.z));
+
+		//colBoxList.clear();
+		//octree.intersect(bounds, octree.root, colBoxList);
+
+
+		/*if (bounds.overlap(testBox)) {
+			cout << "overlap" << endl;
+		}
+		else {
+			cout << "OK" << endl;
+		}*/
+
+
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
+		if (startGame) return;
 
+		glm::vec3 origin = activeCamera->getPosition();
+		glm::vec3 mouseWorld = activeCamera->screenToWorld(glm::vec3(mouseX, mouseY, 0));
+		glm::vec3 mouseDir = glm::normalize(mouseWorld - origin);
+
+		ofVec3f min = lander.model.getSceneMin() + lander.model.getPosition();
+		ofVec3f max = lander.model.getSceneMax() + lander.model.getPosition();
+
+		Box bounds = Box(Vector3(min.x, min.y, min.z), Vector3(max.x, max.y, max.z));
+		bool hit = bounds.intersect(Ray(Vector3(origin.x, origin.y, origin.z), Vector3(mouseDir.x, mouseDir.y, mouseDir.z)), 0, 10000);
+		if (hit) {
+			selectedLander = true;
+			mouseDownPos = getMousePointOnPlane(lander.model.getPosition(), activeCamera->getZAxis());
+			mouseLastPos = mouseDownPos;
+			inDrag = true;
+		}
+		else {
+			selectedLander = false;
+		}
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
-
+	inDrag = false;
 }
 
 //--------------------------------------------------------------
@@ -545,4 +618,28 @@ void ofApp::initLightingAndMaterials() {
 	landingPadLights[0].setPosition(-1.3f, 1.0f, 1.5f);
 	landingPadLights[1].setPosition(7.5f, 4.5f, -3.0f);
 	landingPadLights[2].setPosition(-8.0f, 6.2f, -4.3f);
+}
+
+glm::vec3 ofApp::getMousePointOnPlane(glm::vec3 planePt, glm::vec3 planeNorm) {
+	// Setup our rays
+	//
+	glm::vec3 origin = activeCamera->getPosition();
+	glm::vec3 camAxis = activeCamera->getZAxis();
+	glm::vec3 mouseWorld = activeCamera->screenToWorld(glm::vec3(mouseX, mouseY, 0));
+	glm::vec3 mouseDir = glm::normalize(mouseWorld - origin);
+	float distance;
+
+	bool hit = glm::intersectRayPlane(origin, mouseDir, planePt, planeNorm, distance);
+
+	if (hit) {
+		// find the point of intersection on the plane using the distance 
+		// We use the parameteric line or vector representation of a line to compute
+		//
+		// p' = p + s * dir;
+		//
+		glm::vec3 intersectPoint = origin + distance * mouseDir;
+
+		return intersectPoint;
+	}
+	else return glm::vec3(0, 0, 0);
 }

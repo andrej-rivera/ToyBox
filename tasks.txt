@@ -1,0 +1,28 @@
+Shane:
+[x] explosion effect
+[x] thruster effect
+[x] lighting (3 mininum)
+[x] cameras (3 minimum)
+[x] camera switching implementation
+[x] terrain model > 200k vertices
+[x] ship model
+[x] thruster sfx
+[x] explosion sfx
+[x] background sfx (probably music)
+[x] audio implementation (thruster, explosion, music)
+[x] 2d background
+[x] 2d background implementation
+[x] general tweaks
+
+Andre:
+[x] octree implementation
+[x] player movement
+[x] collision & implementation
+[x] win condition (land on 3 plats)
+[x] AGL meter (send raycast downwards, calculate distance of boxes)
+[x] fuel gauge
+[x] explosion physics (too fast, big boom, maybe just set velocity to a random opposite value?)
+[x] scoring
+[x] turbulence to physics
+[x] drag rocket position before game start feature
+[x] UI

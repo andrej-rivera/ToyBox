@@ -38,6 +38,7 @@ class ofApp : public ofBaseApp{
 		bool startGame = false;
 		bool playerWon = false;
 		bool outtaFuel = false;
+		bool noScan = false;
 		float fuelCount = 120.0f;
 		float altitude;
 		float score;

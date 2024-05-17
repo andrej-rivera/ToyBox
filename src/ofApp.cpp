@@ -1,9 +1,51 @@
 #include "ofApp.h"
 
+void ofApp::restart(){
+	// setup stats
+	startGame = false;
+	playerWon = false;
+	outtaFuel = false;
+	fuelCount = 120.0f;
+	altitude = 0;
+	score = 0;
+	bool platformsLanded[3] = { false, false, false };
+
+	//setup freecam
+	freeCamera.setDistance(10);
+	freeCamera.setNearClip(.1);
+	freeCamera.setFov(65.5);   // approx equivalent to 28mm in 35mm format
+	freeCamera.disableMouseInput();
+	ofEnableSmoothing();
+	ofEnableDepthTest();
+
+	// camera stuff
+	trackingCamera.setPosition({ 0, 12, 16 });
+	onboardCamera.setNearClip(0.1f);
+	activeCamera = &freeCamera;
+
+
+	//reset forces
+	gravityForce = ofVec3f(0, -5, 0);
+	groundForce = ofVec3f(0, 0, 0);
+	forwardForce = ofVec3f(0, 0, 0);
+	sideForce = ofVec3f(0, 0, 0);
+
+	//setup lander
+	lander.setup();
+	lander.landerPosition.set(0, 2, 0);
+	lander.forces.push_back(&gravityForce);
+	lander.forces.push_back(&groundForce);
+	lander.forces.push_back(&forwardForce);
+	lander.forces.push_back(&sideForce);
+	lander.model.setPosition(0, 2, 0);
+}
+
 //--------------------------------------------------------------
 void ofApp::setup(){
 
 	ofSetVerticalSync(true);
+
+
 
 	//setup freecam
 	freeCamera.setDistance(10);
@@ -121,6 +163,7 @@ void ofApp::update(){
 		lander.collisions.clear();
 
 		lander.landerVelocity.y = -lander.landerVelocity.y;
+		lander.landerVelocity.y *= 0.5;
 
 		if (lander.landerVelocity.length() > 4) {
 			AudioSystem::play(Sound::explosion);
@@ -130,6 +173,7 @@ void ofApp::update(){
 			//cout << lander.landerVelocity << endl;
 			explosionEmitter.position = lander.landerPosition;
 			explosionEmitter.started = true;
+			playerWon = true;
 		}
 		groundForce = -lander.landerAcceleration + -gravityForce;
 	}
@@ -248,8 +292,13 @@ void ofApp::draw(){
 	ofSetColor(ofColor::white);
 	
 	if (!startGame) {
-		ofDrawBitmapString("Press Spacebar to Launch! Drag the rocket to move it.", ofGetWindowWidth() / 2 - 150, ofGetWindowHeight() / 2);
-		ofDrawBitmapString("Drag the rocket to move it.", ofGetWindowWidth() / 2 - 50, ofGetWindowHeight() / 2 - 25);
+		ofDrawBitmapStringHighlight("Press Spacebar to Launch! Drag the rocket to move it.", ofGetWindowWidth() / 2 - 150, ofGetWindowHeight() / 2, ofColor::black, ofColor::white);
+		ofDrawBitmapStringHighlight("Drag the rocket to move it.", ofGetWindowWidth() / 2 - 50, ofGetWindowHeight() / 2 - 25, ofColor::black, ofColor::white);
+	}
+
+	if (playerWon) {
+		ofDrawBitmapStringHighlight("Push O to restart.", ofGetWindowWidth() / 2 - 50, ofGetWindowHeight() / 2 - 25, ofColor::black, ofColor::white);
+		ofDrawBitmapStringHighlight("Score: " + ofToString(score, 2), ofGetWindowWidth() / 2, ofGetWindowHeight() / 2 - 25, ofColor::black);
 	}
 
 	ofDrawBitmapString("Score: " + ofToString(score, 2), 50, 100);
@@ -266,7 +315,7 @@ void ofApp::draw(){
 }
 
 void ofApp::playerMove() {
-	if (outtaFuel)
+	if (outtaFuel || !startGame || playerWon)
 		return;
 
 	// rotation
@@ -332,6 +381,12 @@ void ofApp::keyPressed(int key){
 	case ' ':
 		if (!startGame)
 			startGame = true;
+		break;
+
+	case 'o':
+		if(startGame)
+			restart();
+		break;
 
 	// Camera controls
 
@@ -352,6 +407,7 @@ void ofApp::keyPressed(int key){
 	case 'r':
 		freeCamera.lookAt(lander.landerPosition);
 		break;
+
 	
 	// ================== lander rotation & Y thrust ================== \\
 	

@@ -10,12 +10,16 @@ void Lander::integrate() {
 	// add other forces (like gravity)
 	for (ofVec3f *f : forces)
 	{
+
 		//cout << *f << endl;
 		landerVelocity += *f * ofGetLastFrameTime();
 		//landerVelocity += *f / ofGetFrameRate();
 
 	}
 	
+	// add turbulence to particle for some randomness
+	ofVec3f turbulence = ofVec3f(ofRandom(0.9, 1), 1, ofRandom(0.9, 1));
+	landerVelocity *= turbulence;
 	landerVelocity *= damping;
 
 	model.setPosition(landerPosition.x, landerPosition.y, landerPosition.z);

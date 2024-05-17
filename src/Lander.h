@@ -12,6 +12,7 @@ public:
 	
 	void setup() {
 		//setup model
+		forces.clear();
 		model.loadModel("geo/rocket.dae");
 		model.setScaleNormalization(false);
 		model.setPosition(0, 0, 0);

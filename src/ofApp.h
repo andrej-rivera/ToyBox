@@ -13,6 +13,7 @@ class ofApp : public ofBaseApp{
 
 	public:
 		void setup();
+		void restart();
 		void update();
 		void draw();
 		void playerMove();
@@ -40,7 +41,7 @@ class ofApp : public ofBaseApp{
 		float fuelCount = 120.0f;
 		float altitude;
 		float score;
-
+		
 		// collision objects
 		vector<Octree> octrees;
 		Box boundingBox;

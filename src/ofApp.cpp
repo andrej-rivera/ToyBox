@@ -4,23 +4,28 @@
 void ofApp::setup(){
 
 	//setup cam
-	cam.setDistance(10);
-	cam.setNearClip(.1);
-	cam.setFov(65.5);   // approx equivalent to 28mm in 35mm format
+	freeCamera.setDistance(10);
+	freeCamera.setNearClip(.1);
+	freeCamera.setFov(65.5);   // approx equivalent to 28mm in 35mm format
 	ofSetVerticalSync(true);
-	cam.disableMouseInput();
+	freeCamera.disableMouseInput();
 	ofEnableSmoothing();
 	ofEnableDepthTest();
+
+	// camera stuff
+	trackingCamera.setPosition({0, 12, 16});
+	onboardCamera.setNearClip(0.1f);
+	activeCamera = &freeCamera;
 
 	initLightingAndMaterials();
 
 
-	//setup map
+	// setup map
 	map.loadModel("geo/environment.dae");
 	map.setScaleNormalization(false);
 
 
-	//setup octree
+	// setup octree
 	for (int i = 0; i < map.getMeshCount(); i++)
 	{
 		Octree o;
@@ -39,8 +44,6 @@ void ofApp::setup(){
 	lander.forces.push_back(&groundForce);
 	lander.forces.push_back(&forwardForce);
 	lander.forces.push_back(&sideForce);
-
-	shader.load("shaders/test");
 
 	// audio
 	if (!AudioSystem::isLoaded()) {
@@ -67,7 +70,7 @@ void ofApp::update(){
 	if (lander.collisions.size() > 5)
 	{
 		lander.collisions.clear();
-		if (lander.landerVelocity.length() > 15) {
+		if (lander.landerVelocity.length() > 4) {
 			AudioSystem::play(Sound::explosion);
 			lander.landerVelocity.x = ofRandom(-10, 10);
 			lander.landerVelocity.z = ofRandom(-10, 10);
@@ -81,6 +84,16 @@ void ofApp::update(){
 		groundForce = ofVec3f(0, 0, 0);
 	}
 
+	// camera stuff
+	if (activeCamera == &trackingCamera) {
+		trackingCamera.lookAt(lander.landerPosition);
+	}
+	else if (activeCamera == &onboardCamera) {
+		onboardCamera.setPosition(lander.landerPosition + lander.headingVector * 0.14f);
+		onboardCamera.lookAt(lander.landerPosition + lander.headingVector);
+		onboardCamera.tilt(-75.0f);
+		onboardCamera.dolly(0.3f);
+	}
 }
 
 //--------------------------------------------------------------
@@ -92,7 +105,7 @@ void ofApp::draw(){
 	gui.draw();
 
 
-	cam.begin();
+	activeCamera->begin();
 	ofPushMatrix();
 	ofEnableLighting();              // shaded mode
 	map.drawFaces();
@@ -120,7 +133,7 @@ void ofApp::draw(){
 
 	ofPopMatrix();
 
-	cam.end();
+	activeCamera->end();
 }
 
 void ofApp::playerMove() {
@@ -183,8 +196,25 @@ void ofApp::playerMove() {
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
 	switch (key) {
+	
+	// Camera controls
+
+	case OF_KEY_TAB:
+		if (activeCamera == &freeCamera) {
+			activeCamera = &trackingCamera;
+		}
+		else if (activeCamera == &trackingCamera) {
+			activeCamera = &onboardCamera;
+		}
+		else {
+			activeCamera = &freeCamera;
+		}
+		break;
 	case OF_KEY_ALT:
-		cam.enableMouseInput();
+		freeCamera.enableMouseInput();
+		break;
+	case 'r':
+		freeCamera.lookAt(lander.landerPosition);
 		break;
 	
 	// ================== lander rotation & Y thrust ================== \\
@@ -241,7 +271,7 @@ void ofApp::keyReleased(int key){
 	//lander.angularAcceleration = 0;
 	switch (key) {
 	case OF_KEY_ALT:
-		cam.disableMouseInput();
+		freeCamera.disableMouseInput();
 		break;
 
 		// ================== lander rotation & Y thrust ================== \\

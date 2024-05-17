@@ -30,7 +30,6 @@ class ofApp : public ofBaseApp{
 
 		ofxAssimpModelLoader map;
 		Lander lander;
-		ofEasyCam cam;
 
 		// collision objects
 		vector<Octree> octrees;
@@ -51,5 +50,8 @@ class ofApp : public ofBaseApp{
 
 		void initLightingAndMaterials();
 
-		ofShader shader{};
+		ofCamera* activeCamera{nullptr};
+		ofEasyCam freeCamera{};
+		ofCamera trackingCamera{};
+		ofCamera onboardCamera{};
 };

@@ -3,14 +3,14 @@
 void Lander::integrate() {
 
 
-	landerPosition += landerVelocity / ofGetFrameRate();
-	landerVelocity += landerAcceleration / ofGetFrameRate();
+	landerPosition += landerVelocity * ofGetLastFrameTime();
+	landerVelocity += landerAcceleration * ofGetLastFrameTime();
 	
 	// add other forces (like gravity)
 	for (ofVec3f *f : forces)
 	{
 		//cout << *f << endl;
-		landerVelocity += *f / ofGetFrameRate();
+		landerVelocity += *f * ofGetLastFrameTime();
 	}
 	
 	landerVelocity *= damping;
@@ -31,8 +31,8 @@ void Lander::angularIntegrate() {
 	// ofGetFrameRate() returns 0 on startup, causing division by 0 error.
 	// solution: add 1 to ofGetFrameRate() before division
 
-	landerAngle += angularVelocity / (ofGetFrameRate() + 1);
-	angularVelocity += angularAcceleration / (ofGetFrameRate() + 1);
+	landerAngle += angularVelocity * ofGetLastFrameTime();
+	angularVelocity += angularAcceleration * ofGetLastFrameTime();
 	angularVelocity *= angularDamping;
 	model.setRotation(0, landerAngle, 0, 1, 0);
 

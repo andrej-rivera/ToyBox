@@ -63,6 +63,9 @@ void ofApp::setup(){
 	}
 	AudioSystem::play(Sound::soundtrack);
 
+	// explosion
+	explosionEmitter.amount = 64;
+	explosionEmitter.isExplosive = true;
 }
 
 //--------------------------------------------------------------
@@ -98,6 +101,8 @@ void ofApp::update(){
 			lander.landerVelocity.x = ofRandom(-10, 10) * 5;
 			lander.landerVelocity.z = ofRandom(-10, 10) * 5;
 			//cout << lander.landerVelocity << endl;
+			explosionEmitter.position = lander.landerPosition;
+			explosionEmitter.started = true;
 		}
 		groundForce = -lander.landerAcceleration + -gravityForce;
 	}
@@ -135,6 +140,7 @@ void ofApp::update(){
 
 	lander.emitter.position = lander.landerPosition;
 	lander.emitter.update();
+	explosionEmitter.update();
 }
 
 //--------------------------------------------------------------
@@ -162,6 +168,7 @@ void ofApp::draw(){
 	lander.drawDebugArrow(); // draws heading vector & side vector arrows
 
 	lander.emitter.draw();
+	explosionEmitter.draw();
 
 	// draw octree
 	ofNoFill();

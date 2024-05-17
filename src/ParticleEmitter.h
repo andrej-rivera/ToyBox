@@ -39,6 +39,7 @@ public:
 
 
 	bool started;
+	bool isExplosive{false};
 
 	vector<Particle> particles; // stores particles
 

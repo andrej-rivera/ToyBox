@@ -65,12 +65,17 @@ class ofApp : public ofBaseApp{
 
 		void initLightingAndMaterials();
 
+		// lights
+		ofLight keyLight{};
+		ofLight backLight{};
+		std::array<ofLight, 3> landingPadLights{};
+
+		// camera
 		ofCamera* activeCamera{nullptr};
 		ofEasyCam freeCamera{};
 		ofCamera trackingCamera{};
 		ofCamera onboardCamera{};
 
-		ofLight keyLight{};
-		ofLight backLight{};
-		std::array<ofLight, 3> landingPadLights{};
+		// action!!!
+		ParticleEmitter explosionEmitter{};
 };

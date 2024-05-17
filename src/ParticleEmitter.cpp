@@ -12,7 +12,7 @@ Particle::Particle() {
 	lifespan = 2.5;
 	birthtime = 0;
 	radius = .02f;
-	damping = 0.8f;
+	damping = 0.9f;
 	mass = 1;
 
 	color = ofColor::red;
@@ -60,7 +60,6 @@ void ParticleEmitter::update() {
 
 	if (!started) return;
 
-
 	float time = ofGetElapsedTimeMillis();
 
 	if ((time - lastSpawned) > (1000.0 / rate)) {
@@ -88,8 +87,16 @@ void ParticleEmitter::update() {
 
 			// position particle on emitter radius & assign vars
 			ofVec3f dir = ofVec3f(ofRandom(-1, 1), ofRandom(0, 1), ofRandom(-1, 1));
-			particle.velocity = velocity;
+
 			particle.position.set(position + (dir.getNormalized() * radius));
+			
+			if (isExplosive) {
+				particle.velocity = dir.getNormalized() * velocity.length();
+			}
+			else {
+				particle.velocity = velocity;
+			}
+
 			particle.birthtime = time;
 			particle.lifespan = lifespan;
 
@@ -102,6 +109,9 @@ void ParticleEmitter::update() {
 
 		lastSpawned = time;
 
+		if (isExplosive) {
+			started = false;
+		}
 	}
 
 	
